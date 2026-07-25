@@ -353,8 +353,13 @@ async function submitOrder(){
   closeCart();
 }
 
+async function logVisit(){
+  try { await sb.from("site_visits").insert([{}]); } catch(e) { /* best-effort, ignore failures */ }
+}
+
 setLang("en");
 loadProducts();
+logVisit();
 </script>
 </body>
 </html>
