@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة الإدارة | Albaseet Soft Gambia</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --navy-950:#0b1730; --navy-900:#0e2148; --gold-500:#f0a530;
+    --ink:#1a2438; --muted:#5b6478; --paper:#f6f8fc; --line:#e4e9f2;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:'Tajawal','Cairo',sans-serif; color:var(--ink); background:var(--paper);}
+  .wrap{max-width:1100px; margin:0 auto; padding:24px;}
+
+  /* Login */
+  #loginScreen{
+    min-height:100vh; display:flex; align-items:center; justify-content:center; background:var(--navy-950);
+  }
+  .login-box{
+    background:#fff; padding:40px; border-radius:16px; width:340px; text-align:center;
+  }
+  .login-box img{width:60px; margin-bottom:14px;}
+  .login-box input{
+    width:100%; padding:12px; margin-bottom:12px; border:1px solid var(--line); border-radius:8px; font-family:inherit;
+  }
+  .login-box button{
+    width:100%; padding:12px; background:var(--gold-500); border:none; border-radius:8px;
+    font-weight:800; cursor:pointer; color:var(--navy-950);
+  }
+  .login-error{color:#e74c3c; font-size:13px; margin-top:8px; display:none;}
+
+  /* Dashboard */
+  #dashboard{display:none;}
+  header{background:var(--navy-950); color:#fff; padding:16px 0;}
+  .header-row{max-width:1100px; margin:0 auto; padding:0 24px; display:flex; justify-content:space-between; align-items:center;}
+  .logout-btn{background:transparent; border:1px solid rgba(255,255,255,.4); color:#fff; padding:8px 16px; border-radius:6px; cursor:pointer;}
+  .tabs{display:flex; gap:10px; margin:24px 0;}
+  .tab-btn{
+    padding:10px 20px; border-radius:8px; border:1px solid var(--line); background:#fff; cursor:pointer; font-weight:700;
+  }
+  .tab-btn.active{background:var(--navy-900); color:#fff;}
+  table{width:100%; border-collapse:collapse; background:#fff; border-radius:10px; overflow:hidden;}
+  th, td{padding:12px 14px; text-align:right; border-bottom:1px solid var(--line); font-size:13.5px;}
+  th{background:var(--paper); font-weight:800;}
+  input.edit-field, select.edit-field{
+    width:100%; padding:6px 8px; border:1px solid var(--line); border-radius:5px; font-family:inherit; font-size:13px;
+  }
+  .save-btn{background:#2ecc71; color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:12.5px;}
+  .del-btn{background:#e74c3c; color:#fff; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:12.5px;}
+  .add-product-box{
+    background:#fff; padding:20px; border-radius:10px; margin-bottom:20px; display:grid;
+    grid-template-columns:repeat(3,1fr); gap:12px;
+  }
+  .add-product-box input, .add-product-box select{
+    padding:9px; border:1px solid var(--line); border-radius:7px; font-family:inherit;
+  }
+  .add-product-box button{
+    grid-column:span 3; background:var(--navy-900); color:#fff; border:none; padding:11px; border-radius:7px; cursor:pointer; font-weight:700;
+  }
+  .status-select{padding:5px; border-radius:5px; border:1px solid var(--line);}
+</style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="login-box">
+    <img src="logo.png" alt="logo">
+    <h3 style="margin-bottom:18px;">تسجيل دخول الأدمن</h3>
+    <input type="email" id="loginEmail" placeholder="الإيميل">
+    <input type="password" id="loginPass" placeholder="كلمة السر">
+    <button onclick="login()">دخول</button>
+    <div class="login-error" id="loginError">بيانات الدخول غير صحيحة</div>
+  </div>
+</div>
+
+<div id="dashboard">
+  <header>
+    <div class="header-row">
+      <b>لوحة إدارة Albaseet Soft</b>
+      <button class="logout-btn" onclick="logout()">تسجيل خروج</button>
+    </div>
+  </header>
+  <div class="wrap">
+    <div class="tabs">
+      <button class="tab-btn active" id="tabProductsBtn" onclick="switchTab('products')">المنتجات</button>
+      <button class="tab-btn" id="tabOrdersBtn" onclick="switchTab('orders')">الطلبات</button>
+    </div>
+
+    <div id="productsPanel">
+      <div class="add-product-box">
+        <input type="text" id="newName" placeholder="اسم المنتج">
+        <input type="number" id="newPrice" placeholder="السعر ($)">
+        <input type="text" id="newCategory" placeholder="الفئة">
+        <input type="text" id="newImage" placeholder="رابط الصورة (اختياري)">
+        <input type="number" id="newStock" placeholder="الكمية المتوفرة">
+        <textarea id="newDesc" placeholder="الوصف" style="grid-column:span 1; padding:9px; border:1px solid var(--line); border-radius:7px; font-family:inherit;"></textarea>
+        <button onclick="addProduct()">+ إضافة منتج جديد</button>
+      </div>
+      <table>
+        <thead><tr><th>الاسم</th><th>السعر</th><th>الفئة</th><th>الكمية</th><th>متوفر</th><th></th></tr></thead>
+        <tbody id="productsTableBody"></tbody>
+      </table>
+    </div>
+
+    <div id="ordersPanel" style="display:none;">
+      <table>
+        <thead><tr><th>الزبون</th><th>الهاتف</th><th>العنوان</th><th>المنتجات</th><th>المجموع</th><th>الدفع</th><th>الحالة</th></tr></thead>
+        <tbody id="ordersTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = "https://ipyafdzrxfwsrenbebad.supabase.co";
+const SUPABASE_KEY = "sb_publishable_HeWYWc9kfvT6Anp49jRNvw_creK5A10";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+async function checkSession(){
+  const { data } = await sb.auth.getSession();
+  if (data.session){
+    showDashboard();
+  }
+}
+
+async function login(){
+  const email = document.getElementById("loginEmail").value.trim();
+  const password = document.getElementById("loginPass").value;
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+  if (error){
+    document.getElementById("loginError").style.display = "block";
+    return;
+  }
+  showDashboard();
+}
+
+async function logout(){
+  await sb.auth.signOut();
+  document.getElementById("dashboard").style.display = "none";
+  document.getElementById("loginScreen").style.display = "flex";
+}
+
+function showDashboard(){
+  document.getElementById("loginScreen").style.display = "none";
+  document.getElementById("dashboard").style.display = "block";
+  loadProducts();
+  loadOrders();
+}
+
+function switchTab(tab){
+  document.getElementById("productsPanel").style.display = tab === "products" ? "block" : "none";
+  document.getElementById("ordersPanel").style.display = tab === "orders" ? "block" : "none";
+  document.getElementById("tabProductsBtn").classList.toggle("active", tab === "products");
+  document.getElementById("tabOrdersBtn").classList.toggle("active", tab === "orders");
+}
+
+async function loadProducts(){
+  const { data, error } = await sb.from("products").select("*").order("id");
+  if (error) return;
+  const body = document.getElementById("productsTableBody");
+  body.innerHTML = data.map(p => `
+    <tr>
+      <td><input class="edit-field" value="${p.name || ''}" id="name-${p.id}"></td>
+      <td><input class="edit-field" type="number" value="${p.price || 0}" id="price-${p.id}"></td>
+      <td><input class="edit-field" value="${p.category || ''}" id="cat-${p.id}"></td>
+      <td><input class="edit-field" type="number" value="${p.stock || 0}" id="stock-${p.id}"></td>
+      <td>
+        <select class="edit-field" id="instock-${p.id}">
+          <option value="true" ${p.in_stock ? 'selected' : ''}>نعم</option>
+          <option value="false" ${!p.in_stock ? 'selected' : ''}>لا</option>
+        </select>
+      </td>
+      <td style="display:flex; gap:6px;">
+        <button class="save-btn" onclick="saveProduct(${p.id})">حفظ</button>
+        <button class="del-btn" onclick="deleteProduct(${p.id})">حذف</button>
+      </td>
+    </tr>
+  `).join("");
+}
+
+async function saveProduct(id){
+  const name = document.getElementById(`name-${id}`).value;
+  const price = parseFloat(document.getElementById(`price-${id}`).value);
+  const category = document.getElementById(`cat-${id}`).value;
+  const stock = parseInt(document.getElementById(`stock-${id}`).value);
+  const in_stock = document.getElementById(`instock-${id}`).value === "true";
+
+  const { error } = await sb.from("products").update({ name, price, category, stock, in_stock }).eq("id", id);
+  alert(error ? "حدث خطأ بالحفظ" : "تم الحفظ بنجاح");
+}
+
+async function deleteProduct(id){
+  if (!confirm("متأكد إنك بدك تحذف هاد المنتج؟")) return;
+  const { error } = await sb.from("products").delete().eq("id", id);
+  if (!error) loadProducts();
+}
+
+async function addProduct(){
+  const name = document.getElementById("newName").value.trim();
+  const price = parseFloat(document.getElementById("newPrice").value);
+  const category = document.getElementById("newCategory").value.trim();
+  const image_url = document.getElementById("newImage").value.trim();
+  const stock = parseInt(document.getElementById("newStock").value) || 0;
+  const description = document.getElementById("newDesc").value.trim();
+
+  if (!name || !price){ alert("الرجاء تعبئة الاسم والسعر على الأقل"); return; }
+
+  const { error } = await sb.from("products").insert([{
+    name, price, category, image_url, stock, description, in_stock: stock > 0
+  }]);
+
+  if (error){ alert("حدث خطأ بالإضافة"); return; }
+  document.getElementById("newName").value = "";
+  document.getElementById("newPrice").value = "";
+  document.getElementById("newCategory").value = "";
+  document.getElementById("newImage").value = "";
+  document.getElementById("newStock").value = "";
+  document.getElementById("newDesc").value = "";
+  loadProducts();
+}
+
+async function loadOrders(){
+  const { data, error } = await sb.from("orders").select("*").order("id", { ascending: false });
+  if (error) return;
+  const body = document.getElementById("ordersTableBody");
+  body.innerHTML = data.map(o => `
+    <tr>
+      <td>${o.customer_name || ''}</td>
+      <td>${o.phone || ''}</td>
+      <td>${o.address || ''}</td>
+      <td>${o.items || ''}</td>
+      <td>$${o.total_price || 0}</td>
+      <td>${o.payment_method || ''}</td>
+      <td>
+        <select class="status-select" onchange="updateStatus(${o.id}, this.value)">
+          <option value="جديد" ${o.status === 'جديد' ? 'selected' : ''}>جديد</option>
+          <option value="جاري التجهيز" ${o.status === 'جاري التجهيز' ? 'selected' : ''}>جاري التجهيز</option>
+          <option value="تم التسليم" ${o.status === 'تم التسليم' ? 'selected' : ''}>تم التسليم</option>
+          <option value="ملغي" ${o.status === 'ملغي' ? 'selected' : ''}>ملغي</option>
+        </select>
+      </td>
+    </tr>
+  `).join("");
+}
+
+async function updateStatus(id, status){
+  await sb.from("orders").update({ status }).eq("id", id);
+}
+
+checkSession();
+</script>
+</body>
+</html>
