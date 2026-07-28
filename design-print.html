@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>إدارة وتصميم الطباعة المتقدم</title>
+    <style>
+        body { font-family: Tahoma, sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
+        .container { max-width: 1000px; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin: auto; }
+        
+        /* الهيدر ورقم التصميم */
+        .top-bar { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
+        .design-id-badge { background: #ffc107; color: #000; padding: 5px 15px; border-radius: 4px; font-weight: bold; }
+
+        /* التبويبات */
+        .tabs { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 10px; }
+        .tab-btn { background: #e9ecef; border: none; padding: 10px 15px; cursor: pointer; border-radius: 4px; font-weight: bold; }
+        .tab-btn.active { background: #007bff; color: white; }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* الأقسام والتحكم */
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        
+        .grid-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 10px; align-items: center; margin-bottom: 10px; background: #f9f9f9; padding: 10px; border-radius: 4px; }
+
+        .btn { background: #28a745; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 4px; font-weight: bold; }
+        .btn:hover { background: #218838; }
+        
+        .preview-box { border: 2px dashed #007bff; padding: 20px; margin-top: 20px; background: #fff; min-height: 150px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <!-- شريط العلوى ورقم التصميم -->
+    <div class="top-bar">
+        <h2>إدارة تصاميم الطباعة</h2>
+        <div>رقم التصميم: <span id="designIdDisplay" class="design-id-badge">NEW</span></div>
+    </div>
+
+    <!-- أزرار التبويبات -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="openTab(event, 'tabGeneral')">1. الإعدادات العامة</button>
+        <button class="tab-btn" onclick="openTab(event, 'tabHeader')">2. ترويسة الفاتورة</button>
+        <button class="tab-btn" onclick="openTab(event, 'tabItems')">3. البنود</button>
+        <button class="tab-btn" onclick="openTab(event, 'tabLogo')">4. لوغو الشركة</button>
+        <button class="tab-btn" onclick="openTab(event, 'tabFooter')">5. نهاية الفاتورة</button>
+    </div>
+
+    <!-- محتوى التبويب الأول: الإعدادات العامة -->
+    <div id="tabGeneral" class="tab-content active">
+        <h3>الإعدادات العامة للورقة</h3>
+        <div class="form-group">
+            <label>اسم التصميم:</label>
+            <input type="text" id="designName" placeholder="أدخل اسم التصميم هنا...">
+        </div>
+        <div class="form-group">
+            <label>حجم الورق المستخدم:</label>
+            <select id="paperSize">
+                <option value="A4">A4</option>
+                <option value="A5">A5</option>
+                <option value="Roll">حراري (Roll 80mm)</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>قياس عرض الورقة (تقسيم الدرجات / الأعمدة الافتراضية):</label>
+            <input type="number" id="gridColumnsCount" value="12" min="1" max="24">
+        </div>
+        <div class="form-group">
+            <label>عدد أسر الفاتورة الافتراضي:</label>
+            <input type="number" id="rowsCount" value="10">
+        </div>
+        <div class="form-group">
+            <label>ارتفاع السطر (ملم أو بكسل):</label>
+            <input type="text" id="rowHeight" value="25px">
+        </div>
+        <div class="form-group">
+            <label>عدد نسخ الطباعة:</label>
+            <input type="number" id="printCopies" value="1" min="1" max="5">
+        </div>
+    </div>
+
+    <!-- محتوى التبويب الثاني: ترويسة الفاتورة -->
+    <div id="tabHeader" class="tab-content">
+        <h3>إعدادات ترويسة الفاتورة والخلايا الديناميكية</h3>
+        <p>قم بتحديد محتوى الخلية، مكانها (السطر والعمود)، وحجم ونوع الخط:</p>
+        <div id="headerFieldsContainer">
+            <!-- صف خلية افتراضي للترويسة -->
+            <div class="grid-row">
+                <select class="header-type">
+                    <option value="">اختر حقل الترويسة...</option>
+                    <option value="customer_name">اسم الزبون</option>
+                    <option value="supplier_name">اسم المورد</option>
+                    <option value="delegate_name">اسم المندوب</option>
+                    <option value="project_name">اسم المشروع</option>
+                    <option value="warehouse_name">اسم المستودع</option>
+                    <option value="notes">ملاحظات</option>
+                    <option value="notes1">ملاحظات ١</option>
+                    <option value="notes2">ملاحظات ٢</option>
+                    <option value="notes3">ملاحظات ٣</option>
+                    <option value="customer_address">عنوان العميل</option>
+                    <option value="customer_phone">رقم هاتف العميل</option>
+                    <option value="doc_number">رقم الوثيقة</option>
+                    <option value="second_payment_box">صندوق الدفعة الثانية</option>
+                    <option value="first_payment_box">صندوق الدفعة الاولى</option>
+                    <option value="invoice_type">نوع الفاتورة (أجل / كاش / غير محددة)</option>
+                </select>
+                <input type="text" placeholder="السطر / العمود" style="width:100%;">
+                <input type="text" placeholder="حجم الخط" value="14px">
+                <input type="text" placeholder="نوع الخط" value="Tahoma">
+            </div>
+        </div>
+        <button class="btn" onclick="addHeaderRow()" style="background:#17a2b8; margin-top:10px;">+ إضافة خلية جديدة للترويسة</button>
+    </div>
+
+    <!-- محتوى التبويب الثالث: البنود -->
+    <div id="tabItems" class="tab-content">
+        <h3>إعدادات جدول البنود والأعمدة</h3>
+        <div id="itemsFieldsContainer">
+            <div class="grid-row">
+                <select class="item-type">
+                    <option value="">اختر حقل البند...</option>
+                    <option value="item_number">رقم البند</option>
+                    <option value="barcode">الباركود</option>
+                    <option value="unit_name">اسم الوحدة</option>
+                    <option value="qty">الكمية</option>
+                    <option value="delegate">المندوب</option>
+                    <option value="warehouse">المستودع</option>
+                    <option value="item_name">اسم المادة</option>
+                    <option value="item_notes">ملاحظات البنود</option>
+                    <option value="acc_col_1">عمود حسابي ١</option>
+                    <option value="acc_col_2">عمود حسابي ٢</option>
+                    <option value="acc_col_3">عمود حسابي ٣</option>
+                </select>
+                <input type="text" placeholder="اسم الخلية يدوياً">
+                <input type="text" placeholder="رقم العمود والعرض">
+                <input type="text" placeholder="خط: 12px Tahoma">
+            </div>
+        </div>
+        <button class="btn" onclick="addItemRow()" style="background:#17a2b8; margin-top:10px;">+ إضافة عمود بنود جديد</button>
+    </div>
+
+    <!-- محتوى التبويب الرابع: لوغو الشركة -->
+    <div id="tabLogo" class="tab-content">
+        <h3>إعدادات لوغو الشركة (Flexible Logo)</h3>
+        <div class="form-group">
+            <label>رابط أو رفع اللوغو:</label>
+            <input type="file" id="logoFile">
+        </div>
+        <div class="form-group">
+            <label>عرض اللوغو (Width):</label>
+            <input type="text" id="logoWidth" value="150px">
+        </div>
+        <div class="form-group">
+            <label>ارتفاع اللوغو (Height):</label>
+            <input type="text" id="logoHeight" value="60px">
+        </div>
+    </div>
+
+    <!-- محتوى التبويب الخامس: نهاية الفاتورة -->
+    <div id="tabFooter" class="tab-content">
+        <h3>نهاية الفاتورة والتذييل</h3>
+        <div id="footerFieldsContainer">
+            <div class="grid-row">
+                <select class="footer-type">
+                    <option value="">اختر حقل النهاية...</option>
+                    <option value="discount">حسم</option>
+                    <option value="amount_text">المبلغ كتابتاً (كلمات)</option>
+                    <option value="payment_type">نوع الدفعة (كاش / بنك / ويفر)</option>
+                </select>
+                <input type="text" placeholder="الأبعاد والترتيب">
+                <input type="text" placeholder="حجم الخط">
+                <input type="text" placeholder="نوع الخط">
+            </div>
+        </div>
+        <button class="btn" onclick="addFooterRow()" style="background:#17a2b8; margin-top:10px;">+ إضافة حقل تذييل جديد</button>
+    </div>
+
+    <div style="margin-top: 30px; border-top: 1px solid #ddd; padding-top: 15px; text-align: left;">
+        <button class="btn" onclick="saveDesign()">حفظ التصميم (توليد رقم تسلسلي)</button>
+    </div>
+
+</div>
+
+<script>
+    // التنقل بين التبويبات
+    function openTab(evt, tabName) {
+        let contents = document.getElementsByClassName("tab-content");
+        for (let c of contents) c.classList.remove("active");
+        
+        let buttons = document.getElementsByClassName("tab-btn");
+        for (let b of buttons) b.classList.remove("active");
+        
+        document.getElementById(tabName).classList.add("active");
+        evt.currentTarget.classList.add("active");
+    }
+
+    // إضافة صف جديد للترويسة
+    function addHeaderRow() {
+        const container = document.getElementById('headerFieldsContainer');
+        const newRow = container.children[0].cloneNode(true);
+        container.appendChild(newRow);
+    }
+
+    // إضافة صف جديد للبنود
+    function addItemRow() {
+        const container = document.getElementById('itemsFieldsContainer');
+        const newRow = container.children[0].cloneNode(true);
+        container.appendChild(newRow);
+    }
+
+    // إضافة صف جديد للنهاية
+    function addFooterRow() {
+        const container = document.getElementById('footerFieldsContainer');
+        const newRow = container.children[0].cloneNode(true);
+        container.appendChild(newRow);
+    }
+
+    // حفظ التصميم ومنحه رقماً تسلسلياً
+    function saveDesign() {
+        // محاكاة جلب آخر رقم تسلسلي من قاعدة البيانات أو التخزين المحلي
+        let lastId = localStorage.getItem('lastDesignSeq') || 1000;
+        let newSeqId = parseInt(lastId) + 1;
+        
+        localStorage.setItem('lastDesignSeq', newSeqId);
+        document.getElementById('designIdDisplayinnerText').innerText = newSeqId;
+        document.getElementById('designIdDisplay').innerText = "# " + newSeqId;
+
+        alert("تم حفظ التصميم بنجاح برقم تسلسلي: " + newSeqId);
+    }
+</script>
+
+</body>
+</html>
+
