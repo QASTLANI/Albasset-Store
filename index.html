@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" id="htmlRoot">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title id="pageTitle">Store | Albaseet Soft Gambia</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=Cairo:wght@400;600;800&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --navy-950:#0b1730; --navy-900:#0e2148; --navy-800:#132c5c;
+    --gold-500:#f0a530; --gold-400:#f7c15e; --ink:#1a2438; --muted:#5b6478;
+    --paper:#f6f8fc; --line:#e4e9f2; --white:#ffffff;
+    --f-body:'Tajawal','Cairo',sans-serif;
+    --wave-green:#00b884;
+  }
+  html[lang="en"]{ --f-body:'Poppins',sans-serif; }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{overflow-x:clip;}
+  body{font-family:var(--f-body); color:var(--ink); background:var(--paper); overflow-x:clip;}
+  .wrap{max-width:1180px; margin:0 auto; padding:0 24px;}
+  header{background:var(--navy-950); color:#fff; padding:16px 0; position:sticky; top:0; z-index:50;}
+  .header-row{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;}
+  .brand{display:flex; align-items:center; gap:12px; font-weight:800; font-size:18px;}
+  .brand img{width:42px; height:42px; border-radius:50%;}
+  .header-right{display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
+  .back-link{color:#cfd9ef; font-size:13.5px; font-weight:600;}
+  .lang-switch{display:flex; background:rgba(255,255,255,.08); border-radius:20px; padding:3px; gap:2px;}
+  .lang-switch button{border:none; background:transparent; color:#cfd9ef; font-weight:800; font-size:12px; padding:6px 12px; border-radius:16px; cursor:pointer; font-family:'Poppins',sans-serif;}
+  .lang-switch button.active{background:var(--gold-500); color:var(--navy-950);}
+  .cart-btn{
+    position:relative; background:var(--gold-500); color:var(--navy-950); border:none;
+    padding:10px 18px; border-radius:8px; font-weight:800; font-size:14px; cursor:pointer;
+    display:flex; align-items:center; gap:8px;
+  }
+  .cart-count{
+    position:absolute; top:-8px; left:-8px; background:#e74c3c; color:#fff;
+    width:20px; height:20px; border-radius:50%; font-size:11px; display:flex;
+    align-items:center; justify-content:center;
+  }
+  .filters{display:flex; gap:10px; padding:14px 0; flex-wrap:wrap;}
+  .filters-sticky{
+    position:sticky; top:var(--header-h, 70px); z-index:40; background:var(--paper);
+    border-bottom:1px solid var(--line);
+  }
+  .search-bar{
+    display:flex; align-items:center; gap:10px; background:#fff; border:1px solid var(--line);
+    border-radius:10px; padding:12px 16px; margin:20px 0 6px; color:var(--muted);
+  }
+  .search-bar input{
+    border:none; outline:none; flex:1; font-size:14px; font-family:inherit; background:transparent; color:var(--ink);
+  }
+  .filter-btn{
+    padding:9px 18px; border-radius:20px; border:1px solid var(--line); background:#fff;
+    font-weight:700; font-size:13.5px; cursor:pointer; color:var(--navy-900);
+  }
+  .filter-btn.active{background:var(--navy-900); color:#fff; border-color:var(--navy-900);}
+  .grid{
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(230px,1fr)); gap:22px; padding:24px 0 60px;
+  }
+  .card{
+    background:#fff; border:1px solid var(--line); border-radius:14px; overflow:hidden;
+    display:flex; flex-direction:column; transition:.2s;
+  }
+  .card:hover{box-shadow:0 16px 30px -18px rgba(19,44,92,.3); transform:translateY(-3px);}
+  .card-img{
+    height:160px; background:#fff center/contain no-repeat; display:flex;
+    align-items:center; justify-content:center; color:#b7c0d4; font-size:34px; cursor:pointer;
+    }
+  .card-title{ cursor:pointer; }
+  .card-body{padding:16px; display:flex; flex-direction:column; gap:8px; flex:1;}
+  .card-cat{font-size:11px; font-weight:800; color:var(--gold-500); text-transform:uppercase;}
+  .card-title{font-weight:800; font-size:15.5px; color:var(--navy-950);}
+  .card-desc{font-size:13px; color:var(--muted); flex:1;}
+  .card-footer{display:flex; justify-content:space-between; align-items:center; margin-top:6px;}
+  .card-price{font-weight:800; font-size:16px; color:var(--navy-900);}
+  .add-btn{
+    background:var(--navy-900); color:#fff; border:none; padding:8px 14px; border-radius:7px;
+    font-weight:700; font-size:13px; cursor:pointer;
+  }
+  .out-badge{color:#e74c3c; font-size:12px; font-weight:800;}
+
+  .product-detail-modal{
+    position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+    background:#fff; border-radius:16px; padding:28px; width:min(420px, 90vw);
+    max-height:85vh; overflow-y:auto; z-index:102; display:none;
+    box-shadow:0 30px 60px rgba(0,0,0,.3);
+  }
+  .product-detail-modal.show{ display:block; }
+  .detail-close{
+    position:absolute; top:16px; right:16px; cursor:pointer; font-size:18px; color:var(--muted);
+  }
+  html[dir="rtl"] .detail-close{ right:auto; left:16px; }
+  .wa-ask-btn{
+    background:#25D366; color:#fff; padding:12px 16px; border-radius:8px; font-weight:700;
+    font-size:13.5px; display:inline-flex; align-items:center; gap:8px; text-decoration:none; flex:1; justify-content:center;
+  }
+
+  .overlay{position:fixed; inset:0; background:rgba(11,23,48,.5); z-index:100; display:none;}
+  .overlay.show{display:block;}
+  .drawer{
+    position:fixed; top:0; left:0; height:100%; width:min(400px, 92vw); background:#fff;
+    z-index:101; transform:translateX(-100%); transition:.3s ease; display:flex; flex-direction:column;
+  }
+  html[dir="ltr"] .drawer{left:auto; right:0; transform:translateX(100%);}
+  .drawer.show{transform:translateX(0);}
+  html[dir="ltr"] .drawer.show{transform:translateX(0);}
+  .drawer-head{padding:20px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center;}
+  .drawer-body{flex:1; overflow-y:auto; padding:16px 20px;}
+  .drawer-foot{padding:20px; border-top:1px solid var(--line);}
+  .cart-item{display:flex; gap:12px; padding:12px 0; border-bottom:1px solid var(--line); align-items:center;}
+  .cart-item-name{font-weight:700; font-size:14px; flex:1;}
+  .qty-controls{display:flex; align-items:center; gap:8px;}
+  .qty-controls button{width:26px; height:26px; border-radius:6px; border:1px solid var(--line); background:#fff; cursor:pointer;}
+  .remove-x{color:#e74c3c; cursor:pointer; font-size:13px;}
+  .total-row{display:flex; justify-content:space-between; font-weight:800; font-size:17px; margin-bottom:14px;}
+  .checkout-btn{
+    width:100%; background:var(--gold-500); color:var(--navy-950); border:none; padding:14px;
+    border-radius:8px; font-weight:800; font-size:15px; cursor:pointer;
+  }
+  .checkout-form{display:none; flex-direction:column; gap:12px; padding:20px;}
+  .checkout-form.show{display:flex;}
+  .checkout-form input, .checkout-form textarea{
+    padding:11px 13px; border:1px solid var(--line); border-radius:7px; font-family:inherit; font-size:14px;
+  }
+  .pay-options{display:flex; gap:10px; flex-wrap:wrap;}
+  .pay-options label{flex:1; min-width:90px; border:1px solid var(--line); border-radius:8px; padding:10px; text-align:center; font-size:13px; font-weight:700; cursor:pointer;}
+  .pay-options label.selected{ border-color:var(--gold-500); background:#fef9e7; }
+  .pay-options input[type="radio"]{ display:none; }
+  .location-btn{
+    background:#eef2fa; border:1px solid var(--line); color:var(--navy-900); padding:11px;
+    border-radius:8px; font-weight:700; font-size:13.5px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;
+    }
+  .location-btn.got-location{ background:#e8f8ee; color:#1a8a4a; border-color:#b7e6c8; }
+  .empty-cart{text-align:center; color:var(--muted); padding:40px 0; font-size:14px;}
+  .loading{text-align:center; padding:60px; color:var(--muted);}
+  
+  /* Wave Payment Modal */
+  .wave-modal {
+    position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+    background:#fff; border-radius:16px; padding:30px; width:min(440px, 92vw);
+    z-index:200; display:none; box-shadow:0 30px 60px rgba(0,0,0,.3);
+  }
+  .wave-modal.show{ display:block; }
+  .wave-modal .wave-number {
+    background:#f0faf5; border:2px solid var(--wave-green); border-radius:12px;
+    padding:16px; text-align:center; font-size:24px; font-weight:800; color:var(--wave-green);
+    margin:12px 0 18px; letter-spacing:1px;
+  }
+  .wave-modal .wave-number small {
+    display:block; font-size:13px; font-weight:400; color:var(--muted);
+  }
+  .wave-modal .btn-wave {
+    background:var(--wave-green); color:#fff; border:none; padding:14px 20px;
+    border-radius:8px; font-weight:700; font-size:15px; width:100%; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; gap:10px;
+  }
+  .wave-modal .btn-wave:hover{ opacity:0.9; }
+  .wave-modal .btn-close-wave {
+    background:#eef2fa; border:none; padding:10px; border-radius:8px;
+    font-weight:600; cursor:pointer; margin-top:8px; width:100%;
+  }
+  .wave-modal .payment-ref-input {
+    margin:12px 0; padding:10px 14px; border:1px solid var(--line); border-radius:8px;
+    font-size:14px; width:100%; font-family:inherit;
+  }
+  .wave-modal .payment-ref-input:focus { border-color:var(--wave-green); outline:none; }
+  .wave-modal .note-text { font-size:13px; color:var(--muted); margin:6px 0; }
+  
+  .overlay-wave{ position:fixed; inset:0; background:rgba(11,23,48,.6); z-index:199; display:none; }
+  .overlay-wave.show{ display:block; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap header-row">
+    <div class="brand">
+      <img src="logo.png" alt="Albaseet Soft">
+      <span data-i18n="storeTitle">متجر Albaseet Soft</span>
+    </div>
+    <div class="header-right">
+      <a href="https://qastlani.github.io/Albassetsoftgambia/" class="back-link" data-i18n="backLink"><i class="fa-solid fa-arrow-right"></i> رجوع للموقع الرئيسي</a>
+      <div class="lang-switch">
+        <button type="button" data-lang="ar" onclick="setLang('ar')">AR</button>
+        <button type="button" class="active" data-lang="en" onclick="setLang('en')">EN</button>
+      </div>
+      <button class="cart-btn" onclick="openCart()">
+        <i class="fa-solid fa-cart-shopping"></i> <span data-i18n="cartLabel">السلة</span>
+        <span class="cart-count" id="cartCount">0</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="search-bar">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input type="text" id="searchInput" data-i18n-ph="searchPlaceholder" placeholder="ابحث عن منتج..." oninput="renderProducts()">
+  </div>
+  <div class="filters-sticky">
+    <div class="filters" id="filters"></div>
+  </div>
+  <div class="grid" id="productsGrid">
+    <div class="loading" data-i18n="loadingText">جارِ تحميل المنتجات...</div>
+  </div>
+</div>
+
+<div class="overlay" id="detailOverlay" onclick="closeProductDetail()"></div>
+<div class="product-detail-modal" id="productDetailModal">
+  <i class="fa-solid fa-xmark detail-close" onclick="closeProductDetail()"></i>
+  <img id="detailImg" style="width:100%; max-height:260px; object-fit:contain; border-radius:10px; margin-bottom:14px;">
+  <div class="card-cat" id="detailCat"></div>
+  <h2 id="detailName" style="margin:6px 0 10px; color:var(--navy-950);"></h2>
+  <p id="detailDesc" style="color:var(--muted); font-size:14px; margin-bottom:14px;"></p>
+  <div class="card-price" id="detailPrice" style="font-size:20px; margin-bottom:16px;"></div>
+  <span class="out-badge" id="detailOutBadge" style="display:none;"></span>
+  <div style="display:flex; gap:10px; flex-wrap:wrap;">
+    <button class="add-btn" id="detailAddBtn" style="flex:1; padding:12px;"></button>
+    <a id="waAskBtn" href="#" target="_blank" class="wa-ask-btn">
+      <i class="fa-brands fa-whatsapp"></i> <span data-i18n="askOnWhatsapp">اسأل عن هذا المنتج</span>
+    </a>
+  </div>
+</div>
+
+<!-- Wave Payment Modal -->
+<div class="overlay-wave" id="overlayWave" onclick="closeWaveModal()"></div>
+<div class="wave-modal" id="waveModal">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+    <h3 style="color:var(--navy-950);" data-i18n="wavePaymentTitle">الدفع عبر Wave</h3>
+    <i class="fa-solid fa-xmark" style="cursor:pointer;font-size:20px;color:var(--muted);" onclick="closeWaveModal()"></i>
+  </div>
+  <p data-i18n="waveInstructions">قم بتحويل المبلغ المطلوب إلى رقم Wave أدناه، ثم أضف مرجع التحويل لتأكيد طلبك.</p>
+  <div class="wave-number">
+    <small data-i18n="waveNumberLabel">📱 رقم Wave الخاص بالمتجر</small>
+    <span id="storeWaveNumber">+220 747 2734</span>
+  </div>
+  <div style="display:flex; gap:10px; margin:10px 0;">
+    <a id="waveDeepLink" href="https://wave.com" target="_blank" class="btn-wave" style="flex:2; text-decoration:none; color:#fff;">
+      <i class="fa-solid fa-mobile-screen-button"></i> <span data-i18n="openWaveApp">افتح تطبيق Wave</span>
+    </a>
+    <button class="btn-wave" style="flex:1; background:var(--navy-800);" onclick="copyWaveNumber()">
+      <i class="fa-regular fa-copy"></i> <span data-i18n="copyNumber">نسخ</span>
+    </button>
+  </div>
+  <div class="note-text" data-i18n="waveRefNote">✏️ بعد التحويل، اكتب رقم المرجع أو إثبات الدفع:</div>
+  <input type="text" id="wavePaymentRef" class="payment-ref-input" data-i18n-ph="waveRefPlaceholder" placeholder="مثال: ref-12345 أو اكتب 'تم التحويل'" />
+  <button class="btn-wave" style="background:var(--gold-500);color:var(--navy-950);margin-top:6px;" onclick="confirmWavePayment()">
+    <i class="fa-regular fa-circle-check"></i> <span data-i18n="confirmWavePayment">تأكيد الدفع عبر Wave</span>
+  </button>
+  <button class="btn-close-wave" onclick="closeWaveModal()" data-i18n="cancelWave">إلغاء</button>
+</div>
+
+<div class="overlay" id="overlay" onclick="closeCart()"></div>
+<div class="drawer" id="cartDrawer">
+  <div class="drawer-head">
+    <b data-i18n="cartTitle">سلة المشتريات</b>
+    <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="closeCart()"></i>
+  </div>
+  <div class="drawer-body" id="cartBody"></div>
+  <div class="checkout-form" id="checkoutForm">
+    <input type="text" id="custName" data-i18n-ph="phName" placeholder="الاسم الكامل" required>
+    <input type="tel" id="custPhone" data-i18n-ph="phPhone" placeholder="رقم الهاتف" required>
+    <textarea id="custAddress" data-i18n-ph="phAddress" placeholder="العنوان بالتفصيل" required></textarea>
+    <button type="button" class="location-btn" id="locationBtn" onclick="shareLocation()">
+      <i class="fa-solid fa-location-dot"></i> <span data-i18n="shareLocation">مشاركة موقعي (اختياري)</span>
+    </button>
+    <input type="text" id="custLocationLink" data-i18n-ph="phLocationLink" placeholder="أو الصق رابط موقعك (اختياري)">
+    <div class="pay-options" id="payOptions">
+      <label onclick="selectPay(this)"><input type="radio" name="pay" value="Cash on Delivery" checked> <span data-i18n="payCash">دفع عند الاستلام</span></label>
+      <label onclick="selectPay(this)"><input type="radio" name="pay" value="Bank Transfer"> <span data-i18n="payBank">تحويل بنكي</span></label>
+      <label onclick="selectPay(this)"><input type="radio" name="pay" value="Wave"> <span data-i18n="payWave">Wave</span></label>
+    </div>
+    <button class="checkout-btn" onclick="submitOrder()" data-i18n="confirmOrder">تأكيد الطلب</button>
+    </div>
+  <div class="drawer-foot" id="cartFoot">
+    <div class="total-row"><span data-i18n="totalLabel">المجموع</span><span id="cartTotal">$0</span></div>
+    <button class="checkout-btn" id="goCheckoutBtn" onclick="showCheckout()" data-i18n="checkoutBtn">إتمام الطلب</button>
+    <a id="waCartBtn" href="#" target="_blank" class="wa-ask-btn" style="width:100%; margin-top:10px; box-sizing:border-box;">
+      <i class="fa-brands fa-whatsapp"></i> <span data-i18n="askCartWhatsapp">استفسار عن سلتي عبر واتساب</span>
+    </a>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = "https://ipyafdzrxfwsrenbebad.supabase.co";
+const SUPABASE_KEY = "sb_publishable_HeWYWc9kfvT6Anp49jRNvw_creK5A10";
+const FORMSPREE_URL = "https://formspree.io/f/mvzevzzy";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// EDIT: Set your Wave number here
+const STORE_WAVE_NUMBER = "+220 747 2734";
+
+let products = [];
+let activeCurrency = { symbol: "$", rate: 1 };
+let pendingWaveOrder = null; // stores order data before wave confirmation
+
+async function loadCurrency(){
+  const { data, error } = await sb.from("currencies").select("*").eq("is_default", true).limit(1).single();
+  if (!error && data) activeCurrency = { symbol: data.symbol, rate: data.rate };
+}
+
+function formatPrice(price){
+  const converted = (price * activeCurrency.rate).toFixed(2).replace(/\.00$/, "");
+  return ${activeCurrency.symbol}${converted};
+}
+let cart = {};
+let activeCategory = "all";
+let currentLang = "en";
+let customerLocation = "";
+
+function shareLocation(){
+  if (!navigator.geolocation){ alert(translations.locationUnsupported[currentLang]); return; }
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      customerLocation = https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude};
+      const btn = document.getElementById("locationBtn");
+      btn.classList.add("got-location");
+      btn.innerHTML = <i class="fa-solid fa-circle-check"></i> ${translations.locationShared[currentLang]};
+    },
+    () => { alert(translations.locationDenied[currentLang]); }
+  );
+}
+
+const translations = {
+  storeTitle: {ar:"متجر Albaseet Soft", en:"Albaseet Soft Store"},
+  backLink: {ar:"رجوع للموقع الرئيسي", en:"Back to Main Site"},
+  cartLabel: {ar:"السلة", en:"Cart"},
+  loadingText: {ar:"جارِ تحميل المنتجات...", en:"Loading products..."},
+  cartTitle: {ar:"سلة المشتريات", en:"Shopping Cart"},
+  phName: {ar:"الاسم الكامل", en:"Full Name"},
+  phPhone: {ar:"رقم الهاتف", en:"Phone Number"},
+  phAddress: {ar:"العنوان بالتفصيل", en:"Full Address"},
+  payCash: {ar:"دفع عند الاستلام", en:"Cash on Delivery"},
+  payBank: {ar:"تحويل بنكي", en:"Bank Transfer"},
+  payWave: {ar:"Wave", en:"Wave"},
+  shareLocation: {ar:"مشاركة موقعي (اختياري)", en:"Share My Location (optional)"},
+  phLocationLink: {ar:"أو الصق رابط موقعك (اختياري)", en:"Or paste your location link (optional)"},
+  locationShared: {ar:"تم مشاركة الموقع", en:"Location shared"},
+  locationUnsupported: {ar:"متصفحك لا يدعم تحديد الموقع", en:"Your browser doesn't support location sharing"},
+  locationDenied: {ar:"تعذر الوصول للموقع، تأكد من السماح بالإذن", en:"Couldn't access location, please allow permission"},
+  confirmOrder: {ar:"تأكيد الطلب", en:"Confirm Order"},
+  totalLabel: {ar:"المجموع", en:"Total"},
+  checkoutBtn: {ar:"إتمام الطلب", en:"Checkout"},
+  allCategory: {ar:"الكل", en:"All"},
+  addToCart: {ar:"أضف للسلة", en:"Add to Cart"},
+  outOfStock: {ar:"غير متوفر", en:"Out of Stock"},
+  emptyCart: {ar:"السلة فارغة", en:"Your cart is empty"},
+  noProducts: {ar:"لا يوجد منتجات بهاي الفئة حالياً.", en:"No products in this category yet."},
+  fillAllFields: {ar:"الرجاء تعبئة كل الحقول", en:"Please fill in all fields"},
+  orderError: {ar:"حدث خطأ، الرجاء المحاولة مرة أخرى أو التواصل عبر واتساب.", en:"Something went wrong. Please try again or contact us via WhatsApp."},
+  orderSuccess: {ar:"تم استلام طلبك بنجاح! رح نتواصل معك قريباً لتأكيد التفاصيل.", en:"Your order has been received! We'll contact you shortly to confirm the details."},
+  emptyCartAlert: {ar:"السلة فارغة", en:"Your cart is empty"},
+  askOnWhatsapp: {ar:"اسأل عن هذا المنتج", en:"Ask on WhatsApp"},
+  askCartWhatsapp: {ar:"استفسار عن سلتي عبر واتساب", en:"Ask about my cart on WhatsApp"},
+  searchPlaceholder: {ar:"ابحث عن منتج...", en:"Search for a product..."},
+  wavePaymentTitle: {ar:"الدفع عبر Wave", en:"Wave Payment"},
+  waveInstructions: {ar:"قم بتحويل المبلغ المطلوب إلى رقم Wave أدناه، ثم أضف مرجع التحويل لتأكيد طلبك.", en:"Transfer the required amount to the Wave number below, then add the payment reference to confirm your order."},
+  waveNumberLabel: {ar:"📱 رقم Wave الخاص بالمتجر", en:"📱 Store Wave Number"},
+  openWaveApp: {ar:"افتح تطبيق Wave", en:"Open Wave App"},
+  copyNumber: {ar:"نسخ", en:"Copy"},
+  waveRefPlaceholder: {ar:"أدخل رقم المرجع أو إثبات الدفع", en:"Enter payment reference or proof"},
+  waveRefNote: {ar:"✏️ بعد التحويل، اكتب رقم المرجع أو إثبات الدفع:", en:"✏️ After transfer, enter the reference number or payment proof:"},
+  confirmWavePayment: {ar:"تأكيد الدفع عبر Wave", en:"Confirm Wave Payment"},
+  cancelWave: {ar:"إلغاء", en:"Cancel"},
+  waveCopied: {ar:"تم نسخ رقم Wave!", en:"Wave number copied!"},
+  waveRefRequired: {ar:"الرجاء إدخال مرجع الدفع لتأكيد طلبك.", en:"Please enter a payment reference to confirm your order."},
+};
+
+const pageTitles = { ar: "المتجر | Albaseet Soft Gambia", en: "Store | Albaseet Soft Gambia" };
+
+function setLang(lang){
+  currentLang = lang;
+  const html = document.getElementById("htmlRoot");
+  html.setAttribute("lang", lang);
+  html.setAttribute("dir", lang === "ar" ? "rtl" : "ltr");
+  document.getElementById("pageTitle").textContent = pageTitles[lang];
+
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    const key = el.getAttribute("data-i18n");
+    if (translations[key]) el.textContent = translations[key][lang];
+  });
+  document.querySelectorAll("[data-i18n-ph]").forEach(el => {
+    const key = el.getAttribute("data-i18n-ph");
+    if (translations[key]) el.setAttribute("placeholder", translations[key][lang]);
+  });
+  document.querySelectorAll(".lang-switch button").forEach(btn => {
+    btn.classList.toggle("active", btn.getAttribute("data-lang") === lang);
+  });
+
+  renderFilters();
+  renderProducts();
+  updateCartUI();
+}
+
+function selectPay(el){
+  document.querySelectorAll('#payOptions label').forEach(l => l.classList.remove('selected'));
+  el.classList.add('selected');
+  const radio = el.querySelector('input[type="radio"]');
+  if(radio) radio.checked = true;
+}
+
+async function loadProducts(){
+  const { data, error } = await sb.from("products").select("*").order("id");
+  if (error){
+    document.getElementById("productsGrid").innerHTML = "<p>Error loading products / حدث خطأ بتحميل المنتجات</p>";
+    return;
+  }
+  products = data;
+  renderFilters();
+  renderProducts();
+}
+
+function renderFilters(){
+  const cats = [...new Set(products.map(p => p.category).filter(Boolean))];
+  const el = document.getElementById("filters");
+  const allLabel = translations.allCategory[currentLang];
+  el.innerHTML = <button class="filter-btn ${activeCategory==='all'?'active':''}" onclick="setCategory('all')">${allLabel}</button> +
+    cats.map(c => <button class="filter-btn ${c===activeCategory?'active':''}" onclick="setCategory('${c}')">${c}</button>).join("");
+}
+
+function setCategory(c){ activeCategory = c; renderFilters(); renderProducts(); }
+
+function levenshtein(a, b){
+  const m = a.length, n = b.length;
+  if (!m) return n; if (!n) return m;
+  const dp = Array.from({length: m+1}, () => new Array(n+1).fill(0));
+  for (let i=0;i<=m;i++) dp[i][0]=i;
+  for (let j=0;j<=n;j++) dp[0][j]=j;
+  for (let i=1;i<=m;i++){
+    for (let j=1;j<=n;j++){
+      dp[i][j] = a[i-1]===b[j-1] ? dp[i-1][j-1] : 1+Math.min(dp[i-1][j-1], dp[i-1][j], dp[i][j-1]);
+    }
+  }
+  return dp[m][n];
+}
+function smartMatch(product, query){
+  const haystack = ${product.name} ${product.description||''} ${product.category||''}.toLowerCase();
+  const haystackWords = haystack.split(/\s+/).filter(Boolean);
+  const queryWords = query.split(/\s+/).filter(Boolean);
+
+  return queryWords.every(qw => {
+    if (haystack.includes(qw)) return true;
+    return haystackWords.some(hw => {
+      const maxDist = qw.length <= 4 ? 1 : 2;
+      return Math.abs(hw.length - qw.length) <= maxDist && levenshtein(qw, hw) <= maxDist;
+    });
+  });
+}
+
+function renderProducts(){
+  let list = activeCategory === "all" ? products : products.filter(p => p.category === activeCategory);
+  const query = (document.getElementById("searchInput")?.value || "").trim().toLowerCase();
+  if (query){
+    list = list.filter(p => smartMatch(p, query));
+  }
+  const grid = document.getElementById("productsGrid");
+  if (list.length === 0){ grid.innerHTML = <p>${translations.noProducts[currentLang]}</p>; return; }
+  grid.innerHTML = list.map(p => 
+    <div class="card">
+      <div class="card-img" onclick="openProductDetail(${p.id})">${p.image_url ? <img src="${p.image_url}" style="width:100%;height:100%;object-fit:contain;"> : '<i class="fa-solid fa-box"></i>'}</div>
+      <div class="card-body">
+        <div class="card-cat">${p.category || ''}</div>
+        <div class="card-title" onclick="openProductDetail(${p.id})">${p.name}</div>
+        <div class="card-desc">${p.description || ''}</div>
+        <div class="card-footer">
+          <div class="card-price">${formatPrice(p.price)}</div>
+          ${p.in_stock === false || p.stock === 0
+            ? <span class="out-badge">${translations.outOfStock[currentLang]}</span>
+            : <button class="add-btn" onclick="addToCart(${p.id})">${translations.addToCart[currentLang]}</button>}
+        </div>
+      </div>
+    </div>
+  ).join("");
+}
+
+function openProductDetail(id){
+  const p = products.find(pr => pr.id === id);
+  if (!p) return;
+  document.getElementById("detailImg").src = p.image_url || "";
+  document.getElementById("detailImg").style.display = p.image_url ? "block" : "none";
+  document.getElementById("detailName").textContent = p.name;
+  document.getElementById("detailCat").textContent = p.category || "";
+  document.getElementById("detailDesc").textContent = p.description || "";
+  document.getElementById("detailPrice").textContent = formatPrice(p.price);
+  const addBtn = document.getElementById("detailAddBtn");
+  const outBadge = document.getElementById("detailOutBadge");
+  outBadge.textContent = translations.outOfStock[currentLang];
+  addBtn.textContent = translations.addToCart[currentLang];
+  if (p.in_stock === false || p.stock === 0){
+    addBtn.style.display = "none"; outBadge.style.display = "inline";
+  } else {
+    addBtn.style.display = "inline-flex"; outBadge.style.display = "none";
+    addBtn.onclick = () => { addToCart(p.id); closeProductDetail(); };
+  }
+  document.getElementById("waAskBtn").querySelector("span").textContent = translations.askOnWhatsapp[currentLang];
+  document.getElementById("waAskBtn").href =
+    https://wa.me/2207472734?text=${encodeURIComponent((currentLang==='ar'?'بدي أعرف أكتر عن: ':"I'd like to know more about: ") + p.name)};
+  document.getElementById("productDetailModal").classList.add("show");
+  document.getElementById("detailOverlay").classList.add("show");
+}
+function closeProductDetail(){
+  document.getElementById("productDetailModal").classList.remove("show");
+  document.getElementById("detailOverlay").classList.remove("show");
+}
+
+function addToCart(id){ cart[id] = (cart[id] || 0) + 1; updateCartUI(); }
+function changeQty(id, delta){ cart[id] = (cart[id] || 0) + delta; if (cart[id] <= 0) delete cart[id]; updateCartUI(); }
+function removeFromCart(id){ delete cart[id]; updateCartUI(); }
+function updateCartUI(){
+  const count = Object.values(cart).reduce((a,b) => a+b, 0);
+  document.getElementById("cartCount").textContent = count;
+  const body = document.getElementById("cartBody");
+  const ids = Object.keys(cart);
+  if (ids.length === 0){
+    body.innerHTML = <div class="empty-cart">${translations.emptyCart[currentLang]}</div>;
+  } else {
+    body.innerHTML = ids.map(id => {
+      const p = products.find(pr => pr.id == id);
+      if (!p) return '';
+      return 
+        <div class="cart-item">
+          <div class="cart-item-name">${p.name}<br><span style="color:#5b6478;font-size:12.5px;">${formatPrice(p.price)}</span></div>
+          <div class="qty-controls">
+            <button onclick="changeQty(${id},-1)">-</button>
+            <span>${cart[id]}</span>
+            <button onclick="changeQty(${id},1)">+</button>
+          </div>
+          <i class="fa-solid fa-trash remove-x" onclick="removeFromCart(${id})"></i>
+        </div>;
+    }).join("");
+  }
+  const total = ids.reduce((sum, id) => {
+    const p = products.find(pr => pr.id == id);
+    return sum + (p ? p.price * cart[id] : 0);
+  }, 0);
+  document.getElementById("cartTotal").textContent = formatPrice(total);
+
+  const cartSummary = ids.map(id => {
+    const p = products.find(pr => pr.id == id);
+    return p ? ${p.name} x${cart[id]} : '';
+  }).join(", ");
+  const waMsg = (currentLang === 'ar' ? 'مرحباً، بدي أستفسر عن هالمنتجات: ' : "Hi, I'd like to ask about these items: ") + cartSummary;
+  document.getElementById("waCartBtn").href = https://wa.me/2207472734?text=${encodeURIComponent(waMsg)};
+}
+
+function openCart(){ document.getElementById("cartDrawer").classList.add("show"); document.getElementById("overlay").classList.add("show"); }
+function closeCart(){
+  document.getElementById("cartDrawer").classList.remove("show");
+  document.getElementById("overlay").classList.remove("show");
+  document.getElementById("checkoutForm").classList.remove("show");
+  document.getElementById("cartFoot").style.display = "block";
+}
+function showCheckout(){
+  if (Object.keys(cart).length === 0){ alert(translations.emptyCartAlert[currentLang]); return; }
+  document.getElementById("checkoutForm").classList.add("show");
+  document.getElementById("cartFoot").style.display = "none";
+}
+
+// ---- Wave Payment Functions ----
+
+function openWaveModal(orderData){
+  pendingWaveOrder = orderData;
+  document.getElementById("waveModal").classList.add("show");
+  document.getElementById("overlayWave").classList.add("show");
+  // Set deep link for Wave (this opens the app or the website)
+  // Wave doesn't have a universal deep link scheme, we use the website as fallback
+  const waveLink = https://wave.com/send?phone=${STORE_WAVE_NUMBER.replace(/\s/g,'')};
+  document.getElementById("waveDeepLink").href = waveLink;
+  // Also try to open the app via intent on mobile (Android)
+  // For iOS, we use the website
+  document.getElementById("storeWaveNumber").textContent = STORE_WAVE_NUMBER;
+  document.getElementById("wavePaymentRef").value = '';
+  // Reset the input placeholder based on language
+  document.getElementById("wavePaymentRef").setAttribute('placeholder', translations.waveRefPlaceholder[currentLang]);
+  // Update text content of buttons
+  document.querySelector('#waveModal .btn-wave[style*="gold"] span').textContent = translations.confirmWavePayment[currentLang];
+  document.querySelector('#waveModal .btn-close-wave span')?.textContent ? 
+    document.querySelector('#waveModal .btn-close-wave span').textContent = translations.cancelWave[currentLang] : 
+    document.querySelector('#waveModal .btn-close-wave').textContent = translations.cancelWave[currentLang];
+}
+
+function closeWaveModal(){
+  document.getElementById("waveModal").classList.remove("show");
+  document.getElementById("overlayWave").classList.remove("show");
+  pendingWaveOrder = null;
+}
+function copyWaveNumber(){
+  const num = STORE_WAVE_NUMBER;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(num).then(() => {
+      alert(translations.waveCopied[currentLang]);
+    }).catch(() => {
+      fallbackCopy(num);
+    });
+  } else {
+    fallbackCopy(num);
+  }
+}
+
+function fallbackCopy(text){
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  document.body.appendChild(textarea);
+  textarea.select();
+  try { document.execCommand("copy"); alert(translations.waveCopied[currentLang]); } catch (e) { /* fallback */ }
+  document.body.removeChild(textarea);
+}
+
+function confirmWavePayment(){
+  const ref = document.getElementById("wavePaymentRef").value.trim();
+  if (!ref) {
+    alert(translations.waveRefRequired[currentLang]);
+    return;
+  }
+  // Close the wave modal
+  closeWaveModal();
+  // Add the wave reference to the pending order data and submit
+  if (pendingWaveOrder) {
+    pendingWaveOrder.waveRef = ref;
+    pendingWaveOrder.paymentMethod = "Wave";
+    submitOrderFinal(pendingWaveOrder);
+  } else {
+    // Fallback: try to submit normally with the wave payment method
+    submitOrder();
+  }
+}
+
+// ---- End Wave Payment Functions ----
+
+async function submitOrder(){
+  const name = document.getElementById("custName").value.trim();
+  const phone = document.getElementById("custPhone").value.trim();
+  const address = document.getElementById("custAddress").value.trim();
+  const payment = document.querySelector('input[name="pay"]:checked').value;
+
+  if (!name ⠞⠺⠟⠟⠞⠟⠞⠵ !address){ alert(translations.fillAllFields[currentLang]); return; }
+
+  const itemsText = Object.keys(cart).map(id => {
+    const p = products.find(pr => pr.id == id);
+    return ${p.name} x${cart[id]};
+  }).join(", ");
+  const total = Object.keys(cart).reduce((sum, id) => {
+    const p = products.find(pr => pr.id == id);
+    return sum + (p.price * cart[id]);
+  }, 0);
+
+  // If payment method is Wave, open the Wave modal first
+  if (payment === "Wave") {
+    const orderData = {
+      name, phone, address, paymentMethod: payment,
+      location: customerLocation || document.getElementById("custLocationLink").value.trim(),
+      itemsText, total, waveRef: null
+    };
+    openWaveModal(orderData);
+    return; // wait for wave confirmation
+  }
+
+  // For non-Wave payments, proceed directly
+  await submitOrderFinal({
+    name, phone, address, paymentMethod: payment,
+    location: customerLocation || document.getElementById("custLocationLink").value.trim(),
+    itemsText, total, waveRef: null
+  });
+}
+
+async function submitOrderFinal(orderData){
+  const { name, phone, address, location, itemsText, total, paymentMethod, waveRef } = orderData;
+
+  // 1) Save order to the database
+  const { data: orderResult, error } = await sb.from("orders").insert([{
+    customer_name: name, phone: phone, address: address,
+    location: location || "",
+    items: itemsText, total_price: total, payment_method: paymentMethod,
+    status: paymentMethod === "Wave" ? "بانتظار تأكيد الدفع" : "جديد",
+    wave_reference: waveRef || null
+  }]).select().single();
+
+  if (error){ alert(translations.orderError[currentLang]); return; }
+
+  // 1b) Save structured line items
+  const itemRows = Object.keys(cart).map(id => {
+    const p = products.find(pr => pr.id == id);
+    return {
+      order_id: orderResult.id,
+      product_name: p.name,
+      qty: cart[id],
+      unit_price: p.price,
+      line_total: p.price * cart[id],
+      description: p.description || "",
+      unit: "pcs"
+    };
+  });
+  try { await sb.from("order_items").insert(itemRows); } catch(e) { /* best-effort */ }
+
+  // 2) Send email notification
+  try {
+    const paymentNote = paymentMethod === "Wave" ? (Wave Ref: ${waveRef || 'لم يتم إدخال مرجع'}) : '';
+    await fetch(FORMSPREE_URL, {
+    method: "POST",
+      headers: { "Content-Type": "application/json", "Accept": "application/json" },
+      body: JSON.stringify({
+        subject: "طلب جديد من المتجر - New Store Order",
+        name: name,
+        phone: phone,
+        address: address,
+        items: itemsText,
+        total: $${total},
+        payment_method: ${paymentMethod} ${paymentNote},
+        wave_reference: waveRef || "N/A"
+      })
+    });
+  } catch (e) { /* email notification failed silently */ }
+
+  alert(translations.orderSuccess[currentLang]);
+  cart = {};
+  customerLocation = "";
+  const locBtn = document.getElementById("locationBtn");
+  locBtn.classList.remove("got-location");
+  locBtn.innerHTML = <i class="fa-solid fa-location-dot"></i> <span data-i18n="shareLocation">${translations.shareLocation[currentLang]}</span>;
+  updateCartUI();
+  closeCart();
+}
+
+async function logVisit(){
+  try { await sb.from("site_visits").insert([{}]); } catch(e) { /* best-effort */ }
+}
+
+setLang("en");
+function setHeaderHeightVar(){
+  const h = document.querySelector("header").offsetHeight;
+  document.documentElement.style.setProperty("--header-h", h + "px");
+}
+window.addEventListener("resize", setHeaderHeightVar);
+setHeaderHeightVar();
+
+loadCurrency().then(loadProducts);
+logVisit();
+</script>
+</body>
+</html>
